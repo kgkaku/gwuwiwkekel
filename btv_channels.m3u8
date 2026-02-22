@@ -1,0 +1,18 @@
+#EXTM3U
+#PLAYLIST: বাংলাদেশ টেলিভিশন চ্যানেল
+#UPDATED: 2026-02-22 19:46:40
+#SOURCE: https://www.btvlive.gov.bd
+#TOTAL CHANNELS: 4
+
+#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV" tvg-logo="https://www.btvlive.gov.bd/images/btv-logo.png" group-title="BTV",BTV
+https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
+
+#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV World" tvg-logo="https://www.btvlive.gov.bd/images/btv-world-logo.png" group-title="BTV",BTV World
+https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
+
+#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="সংসদ টেলিভিশন" tvg-logo="https://www.btvlive.gov.bd/images/sangsad-television-logo.png" group-title="Parliament",সংসদ টেলিভিশন
+https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
+
+#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV চট্টগ্রাম" tvg-logo="https://www.btvlive.gov.bd/images/btv-chattogram-logo.png" group-title="BTV",BTV চট্টগ্রাম
+https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
+

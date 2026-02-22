@@ -1,0 +1,39 @@
+{
+  "last_updated": "2026-02-22T19:46:40.425088",
+  "country": "BD",
+  "total_channels": 4,
+  "channels": [
+    {
+      "name": "BTV",
+      "group": "BTV",
+      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "logo": "https://www.btvlive.gov.bd/images/btv-logo.png",
+      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+    },
+    {
+      "name": "BTV World",
+      "group": "BTV",
+      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "logo": "https://www.btvlive.gov.bd/images/btv-world-logo.png",
+      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+    },
+    {
+      "name": "সংসদ টেলিভিশন",
+      "group": "Parliament",
+      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "logo": "https://www.btvlive.gov.bd/images/sangsad-television-logo.png",
+      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+    },
+    {
+      "name": "BTV চট্টগ্রাম",
+      "group": "BTV",
+      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "logo": "https://www.btvlive.gov.bd/images/btv-chattogram-logo.png",
+      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+    }
+  ]
+}
