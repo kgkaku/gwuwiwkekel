@@ -1,29 +1,31 @@
 {
-  "last_updated": "2026-02-22T20:04:17.560672",
+  "last_updated": "2026-02-22T20:25:05.326278",
   "build_id": "wr5BMimBGS-yN5Rc2tmam",
   "country": "BD",
-  "total_channels": 3,
   "channels": [
     {
-      "name": "BTV",
-      "group": "BTV",
+      "name": "বিটিভি",
+      "urlname": "BTV",
       "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png",
-      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+      "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png"
     },
     {
-      "name": "BTV News",
-      "group": "BTV",
+      "name": "বিটিভি নিউজ",
+      "urlname": "BTV News",
       "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png",
-      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+      "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png"
     },
     {
-      "name": "Sangsad Television",
-      "group": "Parliament",
+      "name": "বিটিভি চট্টগ্রাম",
+      "urlname": "BTV Chattogram",
+      "identifier": "a707f2dc-9704-413a-a67c-17c64a77c350",
+      "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193167149_3.png"
+    },
+    {
+      "name": "সংসদ টেলিভিশন",
+      "urlname": "Sangsad Television",
       "identifier": "9ee3b4f9-fd0a-47c5-a135-2575c5691613",
-      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193184888_2.png",
-      "url": "https://www.btvlive.gov.bd/live/9ee3b4f9-fd0a-47c5-a135-2575c5691613/BD/9ee3b4f9-fd0a-47c5-a135-2575c5691613/index.m3u8"
+      "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193184888_2.png"
     }
   ]
 }
