@@ -1,18 +1,16 @@
 #EXTM3U
 #PLAYLIST: বাংলাদেশ টেলিভিশন চ্যানেল
-#UPDATED: 2026-02-22 19:46:40
+#UPDATED: 2026-02-22 20:04:17
+#BUILD ID: wr5BMimBGS-yN5Rc2tmam
 #SOURCE: https://www.btvlive.gov.bd
-#TOTAL CHANNELS: 4
+#TOTAL CHANNELS: 3
 
-#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV" tvg-logo="https://www.btvlive.gov.bd/images/btv-logo.png" group-title="BTV",BTV
+#EXTINF:-1 tvg-id="355ba051" tvg-name="BTV" tvg-logo="https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png" group-title="BTV",BTV
 https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
 
-#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV World" tvg-logo="https://www.btvlive.gov.bd/images/btv-world-logo.png" group-title="BTV",BTV World
+#EXTINF:-1 tvg-id="355ba051" tvg-name="BTV News" tvg-logo="https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png" group-title="BTV",BTV News
 https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
 
-#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="সংসদ টেলিভিশন" tvg-logo="https://www.btvlive.gov.bd/images/sangsad-television-logo.png" group-title="Parliament",সংসদ টেলিভিশন
-https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
-
-#EXTINF:-1 tvg-id="355ba051-9a60-48aa-adcf-5a6c64da8c5c" tvg-name="BTV চট্টগ্রাম" tvg-logo="https://www.btvlive.gov.bd/images/btv-chattogram-logo.png" group-title="BTV",BTV চট্টগ্রাম
-https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8
+#EXTINF:-1 tvg-id="9ee3b4f9" tvg-name="Sangsad Television" tvg-logo="https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193184888_2.png" group-title="Parliament",Sangsad Television
+https://www.btvlive.gov.bd/live/9ee3b4f9-fd0a-47c5-a135-2575c5691613/BD/9ee3b4f9-fd0a-47c5-a135-2575c5691613/index.m3u8
 

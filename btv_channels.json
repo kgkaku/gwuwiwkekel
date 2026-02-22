@@ -1,39 +1,29 @@
 {
-  "last_updated": "2026-02-22T19:46:40.425088",
+  "last_updated": "2026-02-22T20:04:17.560672",
+  "build_id": "wr5BMimBGS-yN5Rc2tmam",
   "country": "BD",
-  "total_channels": 4,
+  "total_channels": 3,
   "channels": [
     {
       "name": "BTV",
       "group": "BTV",
       "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://www.btvlive.gov.bd/images/btv-logo.png",
+      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png",
       "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
     },
     {
-      "name": "BTV World",
+      "name": "BTV News",
       "group": "BTV",
       "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://www.btvlive.gov.bd/images/btv-world-logo.png",
+      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png",
       "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
     },
     {
-      "name": "সংসদ টেলিভিশন",
+      "name": "Sangsad Television",
       "group": "Parliament",
-      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://www.btvlive.gov.bd/images/sangsad-television-logo.png",
-      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
-    },
-    {
-      "name": "BTV চট্টগ্রাম",
-      "group": "BTV",
-      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "user_id": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
-      "logo": "https://www.btvlive.gov.bd/images/btv-chattogram-logo.png",
-      "url": "https://www.btvlive.gov.bd/live/355ba051-9a60-48aa-adcf-5a6c64da8c5c/BD/355ba051-9a60-48aa-adcf-5a6c64da8c5c/index.m3u8"
+      "identifier": "9ee3b4f9-fd0a-47c5-a135-2575c5691613",
+      "logo": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1676193184888_2.png",
+      "url": "https://www.btvlive.gov.bd/live/9ee3b4f9-fd0a-47c5-a135-2575c5691613/BD/9ee3b4f9-fd0a-47c5-a135-2575c5691613/index.m3u8"
     }
   ]
 }
