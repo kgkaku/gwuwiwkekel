@@ -1,17 +1,16 @@
 import requests
 import json
+import re
 from datetime import datetime
 
 # ============================================
 # বাংলাদেশ টেলিভিশন চ্যানেল লিংক জেনারেটর
 # ============================================
 
-# কনফিগারেশন
 BASE_URL = "https://www.btvlive.gov.bd"
 USER_COUNTRY = "BD"
-BUILD_ID = "wr5BMimBGS-yN5Rc2tmam"  # আপনার দেওয়া বিল্ড আইডি
+BUILD_ID = "wr5BMimBGS-yN5Rc2tmam"
 
-# চ্যানেলের তালিকা
 CHANNELS = [
     {"id": "BTV", "name": "BTV", "group": "BTV"},
     {"id": "BTV World", "name": "BTV World", "group": "BTV"},
@@ -19,22 +18,14 @@ CHANNELS = [
     {"id": "BTV Chattogram", "name": "BTV চট্টগ্রাম", "group": "BTV"}
 ]
 
-# ডিফল্ট লোগো URL (যদি API থেকে না আসে)
-DEFAULT_LOGOS = {
-    "BTV": "https://www.btvlive.gov.bd/images/btv-logo.png",
-    "BTV World": "https://www.btvlive.gov.bd/images/btv-world-logo.png",
-    "Sangsad Television": "https://www.btvlive.gov.bd/images/sangsad-logo.png",
-    "BTV Chattogram": "https://www.btvlive.gov.bd/images/btv-chattogram-logo.png"
-}
-
 def fetch_channel_data(channel):
     """একটি চ্যানেলের ডাটা API থেকে ফেচ করে"""
     
-    # URL তৈরি (স্পেস এনকোডিং)
     channel_id = channel["id"].replace(" ", "%20")
     api_url = f"{BASE_URL}/_next/data/{BUILD_ID}/channel/{channel_id}.json?id={channel['id']}"
     
     print(f"📡 {channel['name']} থেকে ডাটা নিচ্ছি...")
+    print(f"   URL: {api_url}")
     
     try:
         response = requests.get(api_url, timeout=10)
@@ -45,113 +36,108 @@ def fetch_channel_data(channel):
         
         data = response.json()
         
-        # JSON থেকে identifier এবং userId খোঁজা
-        result = extract_ids(data)
+        # সম্পূর্ণ JSON ডিবাগের জন্য (প্রথম 500 ক্যারেক্টার)
+        json_str = json.dumps(data)[:500]
+        # print(f"  📄 JSON: {json_str}...")
         
-        if result:
-            print(f"  ✅ identifier: {result['identifier']}")
-            print(f"  ✅ userId: {result['user_id']}")
-            
-            # লোগো খোঁজা
-            logo = extract_logo(data)
-            if not logo:
-                logo = DEFAULT_LOGOS.get(channel["id"], "")
-                print(f"  ℹ️  ডিফল্ট লোগো ব্যবহার করা হবে")
-            
-            return {
-                "name": channel["name"],
-                "group": channel["group"],
-                "identifier": result["identifier"],
-                "user_id": result["user_id"],
-                "logo": logo
-            }
-        else:
-            print(f"  ❌ identifier/userId পাওয়া যায়নি")
+        # identifier খোঁজা
+        identifier = find_value(data, "identifier")
+        if not identifier:
+            print(f"  ❌ identifier পাওয়া যায়নি")
             return None
+        
+        print(f"  ✅ identifier: {identifier}")
+        
+        # userId খোঁজা - বিভিন্ন নামে খোঁজা
+        user_id = find_value(data, "userId")
+        if not user_id:
+            user_id = find_value(data, "uid")
+        if not user_id:
+            user_id = find_value(data, "id", path=["streams", "0"])
+        if not user_id:
+            user_id = find_value(data, "streamId")
+        
+        if not user_id:
+            print(f"  ❌ userId পাওয়া যায়নি")
+            # userId না পেলে, আমরা identifier-ই userId হিসেবে ব্যবহার করব?
+            # এটা একটা সমাধান হতে পারে
+            user_id = identifier
+            print(f"  ⚠️  identifier-কেই userId হিসেবে ব্যবহার করা হচ্ছে")
+        else:
+            print(f"  ✅ userId: {user_id}")
+        
+        # লোগো খোঁজা
+        logo = find_value(data, "logo")
+        if logo:
+            if logo.startswith("/"):
+                logo = f"{BASE_URL}{logo}"
+            print(f"  ✅ লোগো: {logo[:50]}...")
+        else:
+            # ডিফল্ট লোগো
+            logo = f"{BASE_URL}/images/{channel['id'].lower().replace(' ', '-')}-logo.png"
+            print(f"  ℹ️  ডিফল্ট লোগো ব্যবহার করা হবে")
+        
+        return {
+            "name": channel["name"],
+            "group": channel["group"],
+            "identifier": identifier,
+            "user_id": user_id,
+            "logo": logo
+        }
             
     except Exception as e:
-        print(f"  ❌ এরর: {str(e)[:50]}")
+        print(f"  ❌ এরর: {str(e)[:100]}")
         return None
 
-def extract_ids(data):
-    """JSON থেকে identifier এবং userId খুঁজে বের করে"""
-    
-    # স্ট্রিং-এ সার্চ করার জন্য JSON স্ট্রিং বানানো
-    json_str = json.dumps(data)
-    
-    result = {}
-    
-    # identifier খোঁজা
-    import re
-    identifier_match = re.search(r'"identifier"\s*:\s*"([^"]+)"', json_str)
-    if identifier_match:
-        result["identifier"] = identifier_match.group(1)
-    
-    # userId খোঁজা
-    userid_match = re.search(r'"userId"\s*:\s*"([^"]+)"', json_str)
-    if userid_match:
-        result["user_id"] = userid_match.group(1)
-    
-    # দুইটাই পাওয়া গেলে রিটার্ন
-    if "identifier" in result and "user_id" in result:
-        return result
-    
-    # নাহলে ডিকশনারি ট্রাভার্স করে খোঁজা
-    return traverse_dict(data)
-
-def traverse_dict(obj, depth=0):
-    """ডিকশনারি ট্রাভার্স করে identifier/userId খোঁজে"""
-    if depth > 10:
-        return None
-    
-    result = {}
+def find_value(obj, key, path=None):
+    """JSON-এ key খুঁজে বের করে - উন্নত ভার্সন"""
     
     if isinstance(obj, dict):
-        # সরাসরি খোঁজা
-        if "identifier" in obj and isinstance(obj["identifier"], str):
-            result["identifier"] = obj["identifier"]
-        if "userId" in obj and isinstance(obj["userId"], (str, int)):
-            result["user_id"] = str(obj["userId"])
+        # সরাসরি key থাকলে
+        if key in obj:
+            return obj[key]
         
-        if "identifier" in result and "user_id" in result:
-            return result
+        # সব key চেক করা (case insensitive)
+        for k, v in obj.items():
+            if k.lower() == key.lower():
+                return v
         
-        # নেস্টেড খোঁজা
-        for key, value in obj.items():
-            if isinstance(value, (dict, list)):
-                nested = traverse_dict(value, depth + 1)
-                if nested:
-                    result.update(nested)
-                    if "identifier" in result and "user_id" in result:
-                        return result
+        # নেস্টেড সার্চ
+        for k, v in obj.items():
+            if isinstance(v, (dict, list)):
+                result = find_value(v, key)
+                if result:
+                    return result
     
     elif isinstance(obj, list):
+        # লিস্টের প্রথম আইটেমে সার্চ
         for item in obj:
             if isinstance(item, (dict, list)):
-                nested = traverse_dict(item, depth + 1)
-                if nested:
-                    result.update(nested)
-                    if "identifier" in result and "user_id" in result:
-                        return result
+                result = find_value(item, key)
+                if result:
+                    return result
     
-    return result if result else None
+    # স্পেসিফিক পাথ দেওয়া থাকলে (যেমন: ["streams", 0, "id"])
+    if path:
+        try:
+            current = obj
+            for p in path:
+                if isinstance(p, int):
+                    current = current[p]
+                else:
+                    current = current[p]
+            return current
+        except:
+            pass
+    
+    return None
 
-def extract_logo(data):
-    """JSON থেকে লোগো URL খুঁজে বের করে"""
-    
+def find_value_regex(data, pattern):
+    """Regex ব্যবহার করে value খোঁজা (যখন key জানা নেই)"""
     json_str = json.dumps(data)
-    
-    # লোগো খোঁজা
-    import re
-    logo_match = re.search(r'"logo"\s*:\s*"([^"]+)"', json_str)
-    
-    if logo_match:
-        logo = logo_match.group(1)
-        # relative path হলে base_url যোগ
-        if logo.startswith("/"):
-            logo = f"{BASE_URL}{logo}"
-        return logo
-    
+    match = re.search(pattern, json_str)
+    if match:
+        return match.group(1)
     return None
 
 def create_m3u8_playlist(channels_data):
@@ -214,13 +200,16 @@ def main():
     
     print(f"\n📡 {len(CHANNELS)} টি চ্যানেল থেকে ডাটা সংগ্রহ করা হচ্ছে...\n")
     
-    # সব চ্যানেলের ডাটা সংগ্রহ
     channels_data = []
     for channel in CHANNELS:
         data = fetch_channel_data(channel)
         if data:
             channels_data.append(data)
         print()  # খালি লাইন
+    
+    if not channels_data:
+        print("❌ কোনো চ্যানেলের ডাটা পাওয়া যায়নি")
+        return
     
     # M3U8 প্লেলিস্ট তৈরি
     m3u8_content = create_m3u8_playlist(channels_data)
@@ -242,15 +231,14 @@ def main():
     print(f"    সফল: {len(channels_data)}")
     print(f"    ব্যর্থ: {len(CHANNELS) - len(channels_data)}")
     print("=" * 60)
-    print("✅ btv_channels.m3u8  - M3U8 প্লেলিস্ট (VLC-তে খুলুন)")
+    print("✅ btv_channels.m3u8  - M3U8 প্লেলিস্ট")
     print("✅ btv_channels.json   - JSON ডাটা")
     print("=" * 60)
     
-    # সফল চ্যানেলের তালিকা
     if channels_data:
         print("\n📺  সফল চ্যানেলসমূহ:")
         for i, ch in enumerate(channels_data, 1):
-            print(f"   {i}. {ch['name']}")
+            print(f"   {i}. {ch['name']} (ID: {ch['user_id'][:8]}...)")
 
 if __name__ == "__main__":
     main()
