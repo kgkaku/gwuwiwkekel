@@ -1,11 +1,17 @@
 {
-  "last_updated": "2026-02-23T04:50:54.154980",
+  "last_updated": "2026-02-23T06:50:02.632928",
   "build_id": "wr5BMimBGS-yN5Rc2tmam",
   "country": "BD",
   "channels": [
     {
       "name": "বিটিভি",
       "urlname": "BTV",
+      "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
+      "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png"
+    },
+    {
+      "name": "বিটিভি নিউজ",
+      "urlname": "BTV News",
       "identifier": "355ba051-9a60-48aa-adcf-5a6c64da8c5c",
       "poster": "https://d38ll44lbmt52p.cloudfront.net/cms/channel_poster/1677040358634_BTVogo.png"
     },
