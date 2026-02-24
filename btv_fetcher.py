@@ -1,221 +1,243 @@
 import requests
 import json
+import os
 import re
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple
 
-# ============================================
-# Bangladesh Television (BTV) Channel Link Generator
-# ============================================
+# ---------- কনফিগারেশন ----------
+HOME_API_URL = "https://www.btvlive.gov.bd/api/home"
+USERID_API_PATTERN = "https://www.btvlive.gov.bd/_next/data/wr5BMimBGS-yN5Rc2tmam/channel/{urlname}.json?id={urlname}"
+OUTPUT_FILE = "btv_channels.m3u"
 
-BASE_URL = "https://www.btvlive.gov.bd"
-USER_COUNTRY = "BD"
-HOME_API_URL = f"{BASE_URL}/api/home"
+# সিডিএন বেস URL (যেখানে সব ইমেজ হোস্ট করা)
+CDN_BASE_URL = "https://d38ll44lbmt52p.cloudfront.net"
 
-# API file mapping as per your instructions
-API_FILE_MAP = {
-    "BTV": "BTV",
-    "BTV News": "BTV",  # Important: BTV News uses BTV.json
-    "BTV Chattogram": "BTV-Chattogram",
-    "Sangsad Television": "Sangsad-Television"
+# চ্যানেল-নির্দিষ্ট লোগো ফিক্স (যদি API ভুল ডেটা দেয়)
+CHANNEL_LOGO_OVERRIDES = {
+    "BTV News": f"{CDN_BASE_URL}/cms/channel_poster/1735648543857_Poster.jpg",
+    "বিটিভি নিউজ": f"{CDN_BASE_URL}/cms/channel_poster/1735648543857_Poster.jpg",
 }
 
-def get_build_id():
-    """Fetch buildId from the main website (as fallback)"""
-    print("🔍 Searching for Build ID...")
+# --------------------------------
+
+def fetch_json(url: str, timeout: int = 10) -> Optional[Dict]:
+    """যে কোনো URL থেকে JSON ডেটা fetch করে"""
     try:
-        response = requests.get(BASE_URL, timeout=10)
+        print(f"📡 Fetching: {url}")
+        response = requests.get(url, timeout=timeout)
         response.raise_for_status()
-        patterns = [
-            r'"buildId":"([^"]+)"',
-            r'/_next/data/([^/]+)/',
-        ]
-        for pattern in patterns:
-            match = re.search(pattern, response.text)
-            if match:
-                build_id = match.group(1)
-                print(f"✅ Build ID found: {build_id}")
-                return build_id
-    except Exception as e:
-        print(f"⚠️ Error finding Build ID: {e}")
-
-    print("⚠️ Build ID not found, using default.")
-    return "wr5BMimBGS-yN5Rc2tmam" # Your provided default
-
-def fetch_home_api():
-    """Step 1: Fetch channel list and basic info from /api/home"""
-    print(f"📡 Step 1: Fetching channel list from Home API: {HOME_API_URL}")
-    try:
-        resp = requests.get(HOME_API_URL, timeout=15)
-        resp.raise_for_status()
-        data = resp.json()
-        print(f"✅ Home API loaded successfully.")
-        return data
-    except Exception as e:
-        print(f"❌ Failed to load Home API: {e}")
+        return response.json()
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Error fetching {url}: {e}")
         return None
 
-def extract_channel_list(home_data):
-    """Extract important channels (from menu) from home data"""
-    channels = []
-    if home_data and 'menu' in home_data:
-        for item in home_data['menu']:
-            if item.get('type') == 'channel' and item.get('status') == 'active':
-                urlname = item.get('urlname')
-                if urlname:
-                    channels.append({
-                        "name": item.get('name', urlname),
-                        "urlname": urlname,
-                        "api_file": API_FILE_MAP.get(urlname, urlname.replace(" ", "-"))
-                    })
-        print(f"✅ Extracted {len(channels)} channels from menu.")
-    else:
-        print("⚠️ 'menu' not found in Home API data.")
+def get_full_image_url(image_path: str) -> str:
+    """ইমেজ পাথ থেকে সম্পূর্ণ URL তৈরি করে"""
+    if not image_path:
+        return ""
+    
+    # যদি ইতিমধ্যে সম্পূর্ণ URL হয়
+    if image_path.startswith('http://') or image_path.startswith('https://'):
+        return image_path
+    
+    # যদি cms/ দিয়ে শুরু হয়
+    if image_path.startswith('cms/'):
+        return f"{CDN_BASE_URL}/{image_path}"
+    
+    # অন্য ক্ষেত্রে
+    return image_path
+
+def get_channels_from_home_api() -> Optional[List[Dict]]:
+    """হোম API থেকে সব চ্যানেলের বেসিক তথ্য সংগ্রহ করে"""
+    data = fetch_json(HOME_API_URL)
+    if not data:
+        return None
+    
+    channels = data.get('channel_list', [])
+    if not channels:
+        print("❌ No channels found in home API response")
+        return None
+    
+    # প্রতিটি চ্যানেলের লোগো ঠিক করে দিই
+    for channel in channels:
+        channel_name = channel.get('channel_name', '')
+        poster = channel.get('poster', '')
+        
+        # লোগো ওভাররাইড চেক
+        if channel_name in CHANNEL_LOGO_OVERRIDES:
+            channel['poster'] = CHANNEL_LOGO_OVERRIDES[channel_name]
+            print(f"  🖼️ {channel_name}: Using overridden logo")
+        else:
+            # নইলে সম্পূর্ণ URL তৈরি করি
+            channel['poster'] = get_full_image_url(poster)
+    
+    print(f"✅ Found {len(channels)} channels in home API")
     return channels
 
-def fetch_channel_details(build_id, channel_info):
-    """Step 2: Fetch identifier and poster for each channel from specific JSON API"""
-    urlname = channel_info['urlname']
-    api_file = channel_info['api_file']
-    api_url = f"{BASE_URL}/_next/data/{build_id}/channel/{api_file}.json?id={api_file}"
-
-    print(f"  📡 {channel_info['name']} ({urlname}) -> {api_file}.json")
-
+def get_user_id_from_channel_api(urlname: str, identifier: str) -> Tuple[Optional[str], Optional[str]]:
+    """নির্দিষ্ট চ্যানেলের API থেকে সঠিক userId এবং userCountry বের করে"""
+    api_url = USERID_API_PATTERN.format(urlname=urlname.replace(' ', '%20'))
+    
+    data = fetch_json(api_url)
+    if not data:
+        return None, None
+    
     try:
-        resp = requests.get(api_url, timeout=15)
-        if resp.status_code != 200:
-            print(f"  ⚠️  Status {resp.status_code} - Skipping")
-            return None
-
-        data = resp.json()
-
-        # --- Correct path to extract identifier and poster ---
-        identifier = None
-        poster = None
-
-        # 1️⃣ Try to get from currentChannel (first priority)
-        try:
-            current = data['pageProps']['currentChannel']['channel_details']
-            identifier = current.get('identifier')
-            # poster: usually relative path in current channel
-            poster_path = current.get('poster')
-            if poster_path and not poster_path.startswith('http'):
-                # Build CDN URL
-                poster = f"https://d38ll44lbmt52p.cloudfront.net/{poster_path}"
-            else:
-                poster = poster_path
-        except (KeyError, TypeError):
-            pass
-
-        # 2️⃣ If identifier not found, search in otherChannelList
-        if not identifier:
-            try:
-                for other in data.get('pageProps', {}).get('otherChannelList', []):
-                    if other.get('urlname') == urlname:
-                        identifier = other.get('identifier')
-                        # In otherChannelList, poster is usually full CDN URL
-                        poster = other.get('poster') or poster
-                        break
-            except (KeyError, TypeError):
-                pass
-
-        if identifier and poster:
-            print(f"  ✅ identifier: {identifier[:8]}...")
-            print(f"  ✅ poster: {poster[:60]}...")
-            return {
-                "name": channel_info['name'],
-                "urlname": urlname,
-                "identifier": identifier,
-                "poster": poster
-            }
+        page_props = data.get('pageProps', {})
+        source_url = page_props.get('sourceURL', '')
+        user_country = page_props.get('userCountry', 'BD')
+        
+        # URL থেকে userId বের করার প্যাটার্ন
+        patterns = [
+            rf'/{identifier}/[^/]+/([^/]+)/index\.m3u8$',  # identifier সহ
+            r'/undefined/[^/]+/([^/]+)/index\.m3u8$',      # undefined সহ
+            r'/[^/]+/([^/]+)/index\.m3u8$',                # শুধু শেষ অংশ
+        ]
+        
+        user_id = None
+        for pattern in patterns:
+            match = re.search(pattern, source_url)
+            if match:
+                user_id = match.group(1)
+                break
+        
+        if user_id:
+            print(f"  ✓ {urlname}: userId={user_id}")
+            return user_id, user_country
         else:
-            print(f"  ❌ identifier or poster not found")
-            return None
-
+            # শেষ চেষ্টা হিসেবে URL-এর শেষ অংশ নিই
+            parts = source_url.split('/')
+            if len(parts) >= 2 and 'index.m3u8' in parts[-1]:
+                user_id = parts[-2]
+                if user_id and user_id != 'undefined':
+                    return user_id, user_country
+            
+            return identifier, user_country
+            
     except Exception as e:
-        print(f"  ❌ Error: {str(e)[:100]}")
-        return None
+        print(f"  ❌ Error parsing {urlname} API: {e}")
+        return None, None
 
-def create_m3u8_playlist(channels_data):
-    """Create M3U8 playlist"""
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    m3u8 = "#EXTM3U\n"
-    m3u8 += f"#PLAYLIST: Bangladesh Television (BTV) - Live Channels\n"
-    m3u8 += f"#UPDATED: {timestamp}\n"
-    m3u8 += f"#SOURCE: {BASE_URL}\n"
-    m3u8 += f"#TOTAL CHANNELS: {len(channels_data)}\n\n"
+def generate_m3u_content(channels: List[Dict]) -> str:
+    """সব তথ্য একত্রিত করে M3U ফাইল জেনারেট করে"""
+    
+    content = "#EXTM3U\n"
+    content += f"#PLAYLIST: Bangladesh Television Channels (Updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')})\n"
+    content += "#STATUS: Active\n"
+    content += "#LANGUAGE: bn\n\n"
+    
+    success_count = 0
+    failed_channels = []
+    
+    print("\n📋 Channel List with Logos:")
+    print("-" * 60)
+    
+    for channel in channels:
+        channel_name = channel.get('channel_name', 'Unknown')
+        urlname = channel.get('urlname', '')
+        identifier = channel.get('identifier', '')
+        poster = channel.get('poster', '')
+        
+        # লোগো দেখাই
+        logo_display = poster[:50] + "..." if len(poster) > 50 else poster
+        print(f"  {channel_name}:")
+        print(f"    - Logo: {logo_display}")
+        
+        if not urlname or not identifier:
+            print(f"    ⚠️ Missing urlname or identifier")
+            failed_channels.append(channel_name)
+            continue
+        
+        # userId সংগ্রহ
+        user_id, user_country = get_user_id_from_channel_api(urlname, identifier)
+        
+        if not user_id:
+            user_id = identifier
+        
+        # স্ট্রিম URL
+        stream_url = f"https://www.btvlive.gov.bd/live/{identifier}/{user_country}/{user_id}/index.m3u8"
+        
+        # EXTINF লাইন - এখন সঠিক লোগো সহ
+        content += f"#EXTINF:-1 tvg-id=\"{identifier}\" tvg-name=\"{channel_name}\" tvg-logo=\"{poster}\" tvg-country=\"BD\" group-title=\"Bangladesh TV\", {channel_name}\n"
+        content += f"{stream_url}\n\n"
+        
+        print(f"    ✅ Generated URL")
+        success_count += 1
+    
+    print("-" * 60)
+    print(f"\n📊 Summary: {success_count} channels successful, {len(failed_channels)} failed")
+    
+    return content
 
-    for ch in channels_data:
-        # M3U8 URL: identifier is used as userId
-        m3u8_url = f"{BASE_URL}/live/{ch['identifier']}/{USER_COUNTRY}/{ch['identifier']}/index.m3u8"
-
-        m3u8 += f'#EXTINF:-1 tvg-id="{ch["identifier"][:8]}" '
-        m3u8 += f'tvg-name="{ch["name"]}" '
-        m3u8 += f'tvg-logo="{ch["poster"]}" '
-        m3u8 += f'group-title="BTV",{ch["name"]}\n'
-        m3u8 += f"{m3u8_url}\n\n"
-
-    return m3u8
+def verify_logos(channels: List[Dict]) -> None:
+    """লোগোগুলো ভেরিফাই করে (HTTP HEAD request)"""
+    import requests
+    
+    print("\n🔍 Verifying logos...")
+    for channel in channels:
+        channel_name = channel.get('channel_name', '')
+        poster = channel.get('poster', '')
+        
+        if not poster:
+            print(f"  ⚠️ {channel_name}: No logo")
+            continue
+        
+        try:
+            response = requests.head(poster, timeout=5, allow_redirects=True)
+            if response.status_code == 200:
+                print(f"  ✅ {channel_name}: Logo OK")
+            else:
+                print(f"  ❌ {channel_name}: Logo not accessible (HTTP {response.status_code})")
+        except Exception as e:
+            print(f"  ❌ {channel_name}: Logo check failed - {str(e)[:50]}")
 
 def main():
-    print("=" * 70)
-    print("🇧🇩  Bangladesh Television (BTV) Channel Link Generator (Final Version)")
-    print("=" * 70)
-
-    # 1. Get Build ID
-    build_id = get_build_id()
-    print(f"📡 Using Build ID: {build_id}")
-    print("=" * 70)
-
-    # 2. Fetch channel list from Home API
-    home_data = fetch_home_api()
-    if not home_data:
-        print("❌ Home API not available. Stopping.")
-        return
-
-    channel_list = extract_channel_list(home_data)
-    if not channel_list:
-        print("❌ No channels found.")
-        return
-
-    # 3. Fetch detailed info (identifier, poster) for each channel
-    print("\n📡 Step 2: Fetching detailed info from channel-specific APIs:")
-    successful_channels = []
-    for channel in channel_list:
-        details = fetch_channel_details(build_id, channel)
-        if details:
-            successful_channels.append(details)
-        print("-" * 50)
-
-    # 4. Create and save playlist
-    if successful_channels:
-        m3u8_content = create_m3u8_playlist(successful_channels)
-
-        with open("btv_channels.m3u8", "w", encoding="utf-8") as f:
-            f.write(m3u8_content)
-
-        # JSON output for reference
-        json_output = {
-            "last_updated": datetime.now().isoformat(),
-            "build_id": build_id,
-            "country": USER_COUNTRY,
-            "channels": successful_channels
-        }
-        with open("btv_channels.json", "w", encoding="utf-8") as f:
-            json.dump(json_output, f, indent=2, ensure_ascii=False)
-
-        print("\n" + "=" * 70)
-        print("✅ SUCCESS!")
-        print(f"📊 Total Channels: {len(successful_channels)}")
-        print("=" * 70)
-        print("📁 btv_channels.m3u8  - M3U8 Playlist (Open in VLC)")
-        print("📁 btv_channels.json   - JSON Data")
-        print("=" * 70)
-
-        print("\n📺 Successful Channels:")
-        for i, ch in enumerate(successful_channels, 1):
-            print(f"   {i}. {ch['name']}")
-    else:
-        print("\n❌ Could not fetch any channel data.")
+    print("=" * 80)
+    print(f"🚀 BTV M3U Playlist Generator (v2.1 - Fixed Logos) - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 80)
+    
+    # ধাপ ১: হোম API থেকে চ্যানেলের তথ্য
+    print("\n📥 Step 1: Fetching channel list from home API...")
+    channels = get_channels_from_home_api()
+    if not channels:
+        print("❌ Failed to get channel list. Exiting.")
+        raise SystemExit(1)
+    
+    # লোগো ভেরিফিকেশন (ঐচ্ছিক)
+    verify_logos(channels)
+    
+    # ধাপ ২: M3U জেনারেট
+    print("\n🔍 Step 2: Generating M3U playlist...")
+    m3u_content = generate_m3u_content(channels)
+    
+    # ধাপ ৩: ফাইল সেভ
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        f.write(m3u_content)
+    
+    # ধাপ ৪: ফাইনাল চেক
+    print("\n" + "=" * 80)
+    print(f"✅ SUCCESS! M3U file updated: {OUTPUT_FILE}")
+    
+    # M3U ফাইলের প্রথম কয়েক লাইন দেখাই
+    with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+        print(f"\n📄 M3U Preview (first 10 lines):")
+        print("-" * 60)
+        for line in lines[:10]:
+            if line.startswith('#EXTINF'):
+                # লোগো URL টা দেখাই
+                logo_match = re.search(r'tvg-logo="([^"]+)"', line)
+                if logo_match:
+                    logo = logo_match.group(1)
+                    print(f"  {line[:50]}...")
+                    print(f"    Logo: {logo[:70]}...")
+                else:
+                    print(f"  {line[:70]}...")
+            else:
+                print(f"  {line[:70]}")
+    
+    print("=" * 80)
 
 if __name__ == "__main__":
     main()
