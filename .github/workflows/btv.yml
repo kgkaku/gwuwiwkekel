@@ -2,7 +2,7 @@ name: BTV Live Channels
 
 on:
   schedule:
-    - cron: '0 */3 * * *'  # প্রতি ৩ ঘন্টা পর
+    - cron: '0 */9 * * *'  # প্রতি ৩ ঘন্টা পর
   workflow_dispatch:        # ম্যানুয়ালি রান
 
 permissions:
